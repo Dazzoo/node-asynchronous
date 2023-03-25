@@ -19,15 +19,27 @@ const writeFilePromise = (file, content) => {
     })
 }
 
-const fetchDogImg = async () => {
+const fetchDogImg = async (numOfImgs = 1) => {
     try {
-
         let breed = await ReadFilePromise(`${__dirname}/dog.txt`)
         console.log(`Breed: ${breed}`)
+
+        let numOfImgsArray = []
+
+        for (let i = 1; i <= numOfImgs; i++) {
+            numOfImgsArray.push(i)
+         }
+
+         console.log(numOfImgsArray)
+
+        let promisesList = numOfImgsArray.map(n => superagent.get(`https://dog.ceo/api/breed/${breed}/images/random`))
     
-        let res = await superagent.get(`https://dog.ceo/api/breed/${breed}/images/random`)
-    
-        await writeFilePromise('dog-img.txt', res.body.message)
+        let res = await Promise.all(promisesList)
+        
+        let resLinksList = res.map(res => res.body.message)
+
+        await writeFilePromise('dog-img.txt', resLinksList.join('\n'))
+
         console.log('Random dog image saved to file')
 
     } catch (err) {
@@ -35,7 +47,8 @@ const fetchDogImg = async () => {
         console.log('caught error')
     }
 }
-fetchDogImg()
+
+fetchDogImg(3)
 
 // // Callback Then-Catch 
 
